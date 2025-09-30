@@ -7,6 +7,9 @@ const { google } = require("googleapis");
 
 const app = express();
 
+// Trust proxy (needed for express-rate-limit behind Railway / Heroku)
+app.set("trust proxy", 1);
+
 // Security
 app.use(helmet());
 app.use(cors());
@@ -14,8 +17,8 @@ app.use(express.json());
 
 // Rate limit
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,                  // limit each IP to 100 requests per window
 });
 app.use(limiter);
 
@@ -31,21 +34,20 @@ async function getSheetsClient() {
 }
 
 // Test route
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.send("✅ Backend is running on Railway!");
 });
 
 // Example API
-app.get("/api/hello", (req, res) => {
+app.get("/api/hello", (_req, res) => {
   res.json({ message: "Hello from Railway backend" });
 });
 
 // Google Sheets route (READ example)
-app.get("/api/sheet", async (req, res) => {
+app.get("/api/sheet", async (_req, res) => {
   try {
     const sheets = await getSheetsClient();
 
-    // Replace with your spreadsheet ID
     const spreadsheetId = process.env.SHEET_ID;
 
     const response = await sheets.spreadsheets.values.get({
