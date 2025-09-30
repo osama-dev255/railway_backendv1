@@ -22,9 +22,9 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Google Sheets setup
+// Google Sheets setup using environment variable
 const auth = new google.auth.GoogleAuth({
-  keyFile: "service-account.json", // Make sure this file exists in your project
+  credentials: JSON.parse(process.env.GOOGLE_CREDS), // <-- use Railway env variable
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
