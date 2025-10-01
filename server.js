@@ -22,9 +22,9 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Google Sheets setup using environment variable
+// Google Sheets setup using service account file
 const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(process.env.GOOGLE_CREDS), // <-- use Railway env variable
+  keyFile: "./service-account.json", // Use the service account file directly
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
@@ -55,6 +55,14 @@ app.get("/api/sheet", async (_req, res) => {
       range: "Mauzo!A1:J", // Change to your sheet & range
     });
 
+    // Debug: Log the actual data structure
+    console.log("📊 Sheet data received:");
+    console.log("Number of rows:", response.data.values?.length || 0);
+    if (response.data.values && response.data.values.length > 0) {
+      console.log("Header row:", response.data.values[0]);
+      console.log("Number of columns:", response.data.values[0]?.length || 0);
+    }
+
     res.json({ data: response.data.values });
   } catch (error) {
     console.error("❌ Google Sheets Error:", error);
@@ -62,7 +70,7 @@ app.get("/api/sheet", async (_req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
